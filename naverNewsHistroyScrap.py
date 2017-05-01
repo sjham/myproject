@@ -15,6 +15,32 @@ writer = csv.writer(csvFile)
 exmaxNum = driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[1]').text
 splitNum = exmaxNum.split('/')
 maxNum = int(splitNum[1])
+print(maxNum)
+
+for pageId in range(1,maxNum):
+    for item in scrap:
+        csvRow = []
+        for news in item.findAll(["a","span"]):
+            csvRow.append(news.get_text())
+        writer.writerow(csvRow)
+
+    driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    scrap = soup.select('div.mtype_list_wide > ul.mlist2 > li')
+    driver.implicitly_wait(7)
+
+
+csvFile.close()
+
+"""
+
+exmaxNum = driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[1]').text
+splitNum = exmaxNum.split('/')
+maxNum = int(splitNum[1])
+
+for pageId in range(1,maxNum):
+
 
 for pageId in range(1,maxNum):
     for item in scrap:
@@ -31,7 +57,7 @@ for pageId in range(1,maxNum):
 
 csvFile.close()
 
-"""
+
 driver.find_element_by_link_text(str(pageId)).click()
 maxNumOfPages = 10; # for example
 for pageId in range(2,maxNumOfPages+2):
