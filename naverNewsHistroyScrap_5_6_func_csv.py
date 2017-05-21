@@ -11,10 +11,9 @@ csvFile = open("/home/ham/Envs/scrapy/naverNews.csv", 'wt', newline='', encoding
 writer = csv.writer(csvFile)
 csvRow = []
 
-d1 = date(2017, 4, 1)  # start date
-d2 = date(2017, 4, 2)  # end date
+d1 = date(2017, 1, 1)  # start date
+d2 = date(2017, 1, 31)  # end date
 delta = d2 - d1         # timedelta
-#datesSet = []
 for i in range(delta.days + 1):
     rawDates = d1 + timedelta(days=i)
     newsDates = [str(rawDates)]
@@ -32,14 +31,13 @@ for i in range(delta.days + 1):
         for pageId in range(maxNum):
             for item in scrap:
                 csvRow = []
-                for i, news in enumerate(item.findAll(['a'])):
-                    csvRow.append(i)
+                for news in item.findAll(['a']):
                     csvRow.append(news.get_text().strip())
                 for source in item.findAll(attrs={'class': 'writing'}):
                     csvRow.append(source.get_text().strip())
                 for showTime in item.findAll(attrs={'class': 'eh_edittime'}):
                     csvRow.append(showTime.get_text().strip())
-                    print(csvRow)
+                    #print(csvRow)
                 writer.writerow(csvRow)
 
             driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()

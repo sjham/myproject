@@ -22,6 +22,7 @@ for i in range(delta.days + 1):
         urls = ["http://news.naver.com/main/history/mainnews/list.nhn?date=%s" % i]
     for url in urls:
         driver.get(url)
+        window_before = driver.window_handles[0]
         html = driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
         scrap = soup.select('ul.mlist2 > li')
@@ -32,16 +33,30 @@ for i in range(delta.days + 1):
         for pageId in range(maxNum):
             for item in scrap:
                 csvRow = []
-                for i, news in enumerate(item.findAll(['a'])):
-                    csvRow.append(i)
+                for news in item.findAll(['a']):
                     csvRow.append(news.get_text().strip())
                 for source in item.findAll(attrs={'class': 'writing'}):
                     csvRow.append(source.get_text().strip())
                 for showTime in item.findAll(attrs={'class': 'eh_edittime'}):
                     csvRow.append(showTime.get_text().strip())
-                    print(csvRow)
-                writer.writerow(csvRow)
+                for contentsNews in item.findAll(['a']):
+                    driver.find_element_by_xpath('//*[@id="h.m.text"]/ul[1]/li[1]/a').click()
+                    time.sleep(5)
+                    window_after = driver.window_handles[1]
+                    url2 = driver.current_url
+                    driver.get(url2)
+                    driver.page_source
+                    soup2 = BeautifulSoup(driver.page_source, 'html.parser')
+                    #table = driver.find_element_by_xpath('//*[@id="articleBodyContents').text
+                    scrap2 = soup2.select('td.content > div.main_content')
+                    for table in scrap2:
+                        i = table.find(id='articleBodyContents').get_text()
+                    #table = soup.findAll('//*[@id="articleBodyContents').extract()[0]
+                        csvRow.append(i)
+                    #cont = ''.join(map(str, table.contents))
+                    #csvRow.append(cont)
 
+            driver.switch_to_window(window_before)
             driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
             #driver.implicitly_wait(5)
             time.sleep(5)

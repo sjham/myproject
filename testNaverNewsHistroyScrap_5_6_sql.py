@@ -4,7 +4,13 @@ import time
 import csv
 from bs4 import BeautifulSoup
 from datetime import date, timedelta
+import pymysql
 
+conn = pymysql.connect(host='127.0.0.1', user='ham', passwd='5864', db='mysql', charset='utf8')
+cur = conn.cursor()
+cur.execute("USE scraping")
+cur.execute("ALTER DATABASE scraping CHARACTER SET utf8 COLLATE utf8_general_ci")
+cur.execute("ALTER TABLE pages CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci")
 
 driver = webdriver.PhantomJS()
 csvFile = open("/home/ham/Envs/scrapy/naverNews.csv", 'wt', newline='', encoding='utf-8')
@@ -14,7 +20,6 @@ csvRow = []
 d1 = date(2017, 4, 1)  # start date
 d2 = date(2017, 4, 2)  # end date
 delta = d2 - d1         # timedelta
-#datesSet = []
 for i in range(delta.days + 1):
     rawDates = d1 + timedelta(days=i)
     newsDates = [str(rawDates)]
@@ -32,14 +37,19 @@ for i in range(delta.days + 1):
         for pageId in range(maxNum):
             for item in scrap:
                 csvRow = []
-                for i, news in enumerate(item.findAll(['a'])):
-                    csvRow.append(i)
+                for news in item.findAll(['a']):
                     csvRow.append(news.get_text().strip())
                 for source in item.findAll(attrs={'class': 'writing'}):
                     csvRow.append(source.get_text().strip())
                 for showTime in item.findAll(attrs={'class': 'eh_edittime'}):
                     csvRow.append(showTime.get_text().strip())
-                    print(csvRow)
+
+                insert_stmt = (
+                  "INSERT INTO pages (news, source, showtime)"
+                  "VALUES (%s, %s, %s)"
+                )
+                data = (news.get_text().strip(), source.get_text().strip(), showTime.get_text().strip())
+                cur.execute(insert_stmt, data)
                 writer.writerow(csvRow)
 
             driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
@@ -49,9 +59,12 @@ for i in range(delta.days + 1):
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             scrap = soup.select('ul.mlist2 > li')
 
+cur.connection.commit()
+cur.close()
+conn.close()
+
 driver.quit()
 csvFile.close()
-
 
 """
 from selenium import webdriver
