@@ -17,14 +17,16 @@ csvFile = open("/home/ham/Envs/scrapy/naverNews.csv", 'wt', newline='', encoding
 writer = csv.writer(csvFile)
 csvRow = []
 
-d1 = date(2017, 4, 1)  # start date
-d2 = date(2017, 4, 2)  # end date
+d1 = date(2017, 5, 1)  # start date
+d2 = date(2017, 5, 2)  # end date
 delta = d2 - d1         # timedelta
 for i in range(delta.days + 1):
     rawDates = d1 + timedelta(days=i)
     newsDates = [str(rawDates)]
+    print(newsDates)
     for i in newsDates:
         urls = ["http://news.naver.com/main/history/mainnews/list.nhn?date=%s" % i]
+        print(urls)
     for url in urls:
         driver.get(url)
         html = driver.page_source
@@ -43,7 +45,7 @@ for i in range(delta.days + 1):
                     csvRow.append(source.get_text().strip())
                 for showTime in item.findAll(attrs={'class': 'eh_edittime'}):
                     csvRow.append(showTime.get_text().strip())
-
+                print(csvRow)
                 insert_stmt = (
                   "INSERT INTO pages (news, source, showtime)"
                   "VALUES (%s, %s, %s)"

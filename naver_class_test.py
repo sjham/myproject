@@ -3,6 +3,7 @@
 from selenium import webdriver
 import csv
 import time
+import random
 import pymysql
 import MySQLdb
 from bs4 import BeautifulSoup
@@ -13,34 +14,45 @@ class News_crawl():
     def __init__(self):
         print("Start Crawler")
 
-    def getDate(self):
+    #def getDate(self):
+    def getDate(self, startDate, endDate):
         # startDate = input("Start Date(yyyy,m,d): ")
         # endDate = input("End Date(yyyy,m,d): ")
-        startDate = "2017,5,21"
-        endDate = "2017,5,22"
+        # startDate = "2017,5,21"
+        # endDate = "2017,5,22"
         date1 = datetime.strptime(startDate, "%Y,%m,%d")
         date2 = datetime.strptime(endDate, "%Y,%m,%d")
         delta = date2 - date1
-        self.datesSet = []
+        datesSet = []
         for i in range(delta.days + 1):
             rawDates = date1 + timedelta(days=i)
             newsDates = str(rawDates).replace("00:00:00", "").rstrip()
-            self.datesSet.append(newsDates)
-        return(self.datesSet)
+            datesSet.append(newsDates)
+        return datesSet
+
+#
+# a = News_crawl()
+# a.getDate()
 
 
     def getUrls(self):
-        News_crawl.getDate(self)
+        resultDates = News_crawl.getDate.datesSet
         self.urls = []
-        for i in self.datesSet:
+        for i in resultDates:
             self.urls.append("http://news.naver.com/main/history/mainnews/list.nhn?date=%s" % i)
         return self.urls
 
+#
+# a = News_crawl()
+# #a.getUrls()
+# print(a.getUrls)
 
     def scrape_SaveCsv(self):
         News_crawl.getUrls(self)
         driver = webdriver.PhantomJS()
-        csvFile = open("/home/ham/Envs/scrapy/naverNews1.csv", 'wt', newline='', encoding='utf-8')
+        n = random.sample(xrange(1, 100), 1)
+        tmpFile = "/home/ham/Envs/scrapy/naverNews%s.csv" % n
+        csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
         writer = csv.writer(csvFile)
         writer.writerow(('news', 'source', 'showtime', 'showtime2', 'showtime3'))
 
@@ -123,9 +135,27 @@ class News_crawl():
         #cur.connection.commit()
         conn.close()
 
+#
+# a = News_crawl()
+# a.dicToMysql()
 
-a = News_crawl()
-a.dicToMysql()
+
+if __name__ == '__main__':
+        print ('starting crawl.py...')
+        a = News_crawl()
+        # a.dicToMysql()
+        sDate = input("Start Date(yyyy,m,d): ")
+        eDate = input("End Date(yyyy,m,d): ")
+        a.getDate(sDate, eDate)
+        print ('parsing dates...')
+        a.scrape_SaveCsv()
+        print ('scraping and save to Csv file...')
+        a.csvToDic()
+        print ('converting csv file to dictionary')
+        a.dicToMysql()
+        print ('sending dictionay to Mysql..')
+
+
 
         # query = """INSERT INTO pages (news, source, showtime, showtime2, showtime3) VALUES ('%s', '%s', '%s', '%s', '%s')"""
         # news_list = [item['news'] for item in self.data]

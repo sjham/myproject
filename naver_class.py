@@ -1,14 +1,13 @@
+"""coded by Ham."""
 
 from selenium import webdriver
-import time
 import csv
 import pymysql
 from bs4 import BeautifulSoup
 from datetime import timedelta, datetime
 
 
-class News_scrawl():
-
+class News_crawl():
     def __init__(self):
         # self.startDate = input("Start Date(yyyy,m,d): ")
         # self.endDate = input("End Date(yyyy,m,d): ")
@@ -16,39 +15,49 @@ class News_scrawl():
         # self.urls = urls
         # self.dataRaw = dataRaw
         # # urls = self.urls
-
-        print("start")
+        print("Start Crawler")
 
     def getDate(self):
         # startDate = input("Start Date(yyyy,m,d): ")
         # endDate = input("End Date(yyyy,m,d): ")
-        startDate = "2017,4,1"
-        endDate = "2017,4,2"
+        startDate = "2017,5,20"
+        endDate = "2017,5,21"
         date1 = datetime.strptime(startDate, "%Y,%m,%d")
         date2 = datetime.strptime(endDate, "%Y,%m,%d")
         delta = date2 - date1         # timedelta
         self.datesSet = []
         for i in range(delta.days + 1):
             rawDates = date1 + timedelta(days=i)
+            #yield str(rawDates).replace("00:00:00", "").rstrip()
             newsDates = str(rawDates).replace("00:00:00", "").rstrip()
             self.datesSet.append(newsDates)
         return(self.datesSet)
-        #print(self.datesSet)
 
-
+# a = News_scrawl()
+# r = a.getDate()
+# for i in r:
+#     print(i)
+# print(a.datesSet)
+#
     def getUrls(self):
-        News_scrawl.getDate(self)
+        News_crawl.getDate(self)
         self.urls = []
         for i in self.datesSet:
             self.urls.append("http://news.naver.com/main/history/mainnews/list.nhn?date=%s" % i)
-        return(self.urls)
-        #print(self.urls)
+        return self.urls
 
-
+#
+# a = News_scrawl()
+# a.getUrls()
+# print(a.urls)
+#
     def scrapeNews(self):
-        News_scrawl.getUrls(self)
+        News_crawl.getUrls(self)
         driver = webdriver.PhantomJS()
+        #with open("/home/ham/Envs/scrapy/naverNews.csv", 'w', newline='', encoding='utf-8')
+        self.dataRow = []
         for url in self.urls:
+            #self.dataRow = []
             driver.get(url)
             html = driver.page_source
             soup = BeautifulSoup(html, 'html.parser')
@@ -58,16 +67,22 @@ class News_scrawl():
             maxNum = int(splitNum[1])
 
             for pageId in range(maxNum):
-                self.dataRow = []
+                #self.dataRow = []
                 for item in scrap:
                     #self.dataRow = []
+                    #self.dataRow1 = []
                     for self.news in item.findAll(['a']):
                         self.dataRow.append(self.news.get_text().strip())
                     for self.source in item.findAll(attrs={'class': 'writing'}):
                         self.dataRow.append(self.source.get_text().strip())
                     for self.showTime in item.findAll(attrs={'class': 'eh_edittime'}):
                         self.dataRow.append(self.showTime.get_text().strip())
-                        #self.dataRow.append('\n')
+                    #print(self.dataRow)
+                    #yield self.dataRow
+                    # for i in self.dataRow:
+                    #     print(i)
+                    #     self.dataRow1.append(i)
+
                     #writer.writerow(self.dataRow)
 
                 driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
@@ -76,70 +91,90 @@ class News_scrawl():
                 driver.page_source
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 scrap = soup.select('ul.mlist2 > li')
-        driver.quit()
         return self.dataRow
-        # tmp = str(self.dataRow).split("'\n'")
-        # print(tmp[0])
-        #print(tmp[1])
-        #print(tmp[2])
-        #return tmp
-    #     tmp = self.dataRow.split('\n')
-    def dataTrim(self):
-        News_scrawl.scrapeNews(self)
-        tmp = self.dataRow
-        for i in range(0, len(tmp), 3):
-            yield tmp[i:i + 3]
-
-    def saveData(self):
-        News_scrawl.dataTrim(self)
-        tmp_trim = list(self.dataTrim())
-        conn = pymysql.connect(host='127.0.0.1', user='ham', passwd='5864', db='mysql', charset='utf8')
-        cur = conn.cursor()
-        cur.execute("USE scraping")
-        cur.execute("ALTER DATABASE scraping CHARACTER SET utf8 COLLATE utf8_general_ci")
-        cur.execute("ALTER TABLE pages CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci")
-
-        insert_stmt = (
-          "INSERT INTO pages (news, source, showtime)"
-          "VALUES (%s, %s, %s)"
-        )
-        #data = (self.news.get_text().strip(), self.source.get_text().strip(), self.showTime.get_text().strip())
-        data = (tmp_trim[0], tmp_trim[1], tmp_trim[2])
-
-        cur.execute(insert_stmt, data)
-        cur.connection.commit()
-        cur.close()
-        conn.close()
-    #
-    # #save to CSV
-    # with open("/home/ham/Envs/scrapy/naverNews.csv", 'wt', newline='', encoding='utf-8') as csvFile:
-    #     writer = csv.writer(csvFile)
-    #
-    #     for i in tmp:
-    #         i.split(',')
-    #         news = i[0]
-    #         source = i[1]
-    #         showtime = i[2]
-    #         conn = pymysql.connect(host='127.0.0.1', user='ham', passwd='5864', db='mysql', charset='utf8')
-    #         cur = conn.cursor()
-    #         cur.execute("USE scraping")
-    #         cur.execute("ALTER DATABASE scraping CHARACTER SET utf8 COLLATE utf8_general_ci")
-    #         cur.execute("ALTER TABLE pages CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci")
-    #
-    #         insert_stmt = (
-    #           "INSERT INTO pages (news, source, showtime)"
-    #           "VALUES (%s, %s, %s)"
-    #         )
-    #         #data = (self.news.get_text().strip(), self.source.get_text().strip(), self.showTime.get_text().strip())
-    #         data = (news, source, showtime)
-    #
-    #         cur.execute(insert_stmt, data)
-    #         cur.connection.commit()
-    #     cur.close()
-    #     conn.close()
-    #
+        driver.quit()
+        #self.dataRow1 = list(self.dataRow)
+        #return self.dataRow
 
 
+a = News_crawl()
+a.scrapeNews()
+print(a.dataRow)
+
+#
+# for i in a.dataRow:
+#     print(i)
+# #     self.dataRow1.append(i)
+
+#print(t)
+
+#print(a.dataRow1)
+# for i in a.dataRow:
+#     print(i)
+
+
+        #self.dataRow1 = []
+        # for i in self.dataRow:
+        #     self.dataRow1.append(i)
+        # return self.dataRow1
+#
+#     def saveData(self):
+#         News_crawl.scrapeNews(self)
+#         with open("/home/ham/Envs/scrapy/naverNews.csv", 'w', newline='', encoding='utf-8') as csvFile:
+#             self.writer = csv.writer(csvFile)
+#             for i in self.scrapeNews.dataRow:
+#                 self.writer.writerow(i)
+#
+#
+# a = News_crawl()
+# a.saveData()
+#print(a.dataRow)
+
+
+        # self.dataRow1 = list(self.dataRow)
+        # return self.dataRow1
+#
+#
+# a = News_crawl()
+# t = a.scrapeNews()
+# for i in t:
+#     print(i)
+# print(a.datesSet)
+
+#
+# a = News_crawl()
+# a.scrapeNews()
+# print(a.dataRow1)
+# # #
+#
+
+
+            # fieldnames = ['first_name', 'last_name']
+            # writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            #
+            # for i in tmp:
+            #     i.split(',')
+            #     news = i[0]
+            #     source = i[1]
+            #     showtime = i[2]
+            #     conn = pymysql.connect(host='127.0.0.1', user='ham', passwd='5864', db='mysql', charset='utf8')
+            #     cur = conn.cursor()
+            #     cur.execute("USE scraping")
+            #     cur.execute("ALTER DATABASE scraping CHARACTER SET utf8 COLLATE utf8_general_ci")
+            #     cur.execute("ALTER TABLE pages CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci")
+            #
+            #     insert_stmt = (
+            #       "INSERT INTO pages (news, source, showtime)"
+            #       "VALUES (%s, %s, %s)"
+            #     )
+            #     #data = (self.news.get_text().strip(), self.source.get_text().strip(), self.showTime.get_text().strip())
+            #     data = (news, self.source.get_text().strip(, self.showTime.get_text().strip())
+            #
+            #     cur.execute(insert_stmt, data)
+            #     cur.connection.commit()
+            #     cur.close()
+            #     conn.close()
+            #
             #
             #
             #
@@ -162,19 +197,18 @@ class News_scrawl():
             # cur.close()
             # conn.close()
             #
-            #
 
-obj = News_scrawl()
-#obj.getDate()
-#obj.saveData()
-#obj.getUrls()
-obj.saveData()
-#getDate
-
-#print(obj.getUrls)
-#print(obj.urls)
-#print(obj.dataRow)
-
+#
+# obj = News_scrawl()
+# obj.getDate()
+# #obj.saveData()
+# obj.getUrls()
+# obj.scrapeNews()
+# #getDate
+#
+# #print(obj.getUrls)
+# print(obj.urls)
+# print(obj.dataRow)
 
     # def saveData(self):
     #     # save to CSV

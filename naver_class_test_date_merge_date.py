@@ -3,6 +3,7 @@
 from selenium import webdriver
 import csv
 import time
+import random
 import pymysql
 import MySQLdb
 from bs4 import BeautifulSoup
@@ -13,11 +14,12 @@ class News_crawl():
     def __init__(self):
         print("Start Crawler")
 
-    def getDate(self):
+    #def getDate(self):
+    def getDateUrl(self, startDate, endDate):
         # startDate = input("Start Date(yyyy,m,d): ")
         # endDate = input("End Date(yyyy,m,d): ")
-        startDate = "2017,5,21"
-        endDate = "2017,5,22"
+        # startDate = "2017,5,21"
+        # endDate = "2017,5,22"
         date1 = datetime.strptime(startDate, "%Y,%m,%d")
         date2 = datetime.strptime(endDate, "%Y,%m,%d")
         delta = date2 - date1
@@ -26,21 +28,23 @@ class News_crawl():
             rawDates = date1 + timedelta(days=i)
             newsDates = str(rawDates).replace("00:00:00", "").rstrip()
             self.datesSet.append(newsDates)
-        return(self.datesSet)
 
-
-    def getUrls(self):
-        News_crawl.getDate(self)
-        self.urls = []
+        urls = []
         for i in self.datesSet:
-            self.urls.append("http://news.naver.com/main/history/mainnews/list.nhn?date=%s" % i)
-        return self.urls
+            urls.append("http://news.naver.com/main/history/mainnews/list.nhn?date=%s" % i)
+        return urls
 
+#
+# a = News_crawl()
+# #a.getUrls()
+# print(a.getUrls)
 
     def scrape_SaveCsv(self):
-        News_crawl.getUrls(self)
+        News_crawl.getDateUrl(self)
         driver = webdriver.PhantomJS()
-        csvFile = open("/home/ham/Envs/scrapy/naverNews1.csv", 'wt', newline='', encoding='utf-8')
+        n = random.sample(xrange(1, 100), 1)
+        tmpFile = "/home/ham/Envs/scrapy/naverNews%s.csv" % n
+        csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
         writer = csv.writer(csvFile)
         writer.writerow(('news', 'source', 'showtime', 'showtime2', 'showtime3'))
 
@@ -88,7 +92,7 @@ class News_crawl():
             # showtime_list = [item['showtime'] for item in self.data]
             # showtime2_list = [item['showtime2'] for item in self.data]
             # showtime3_list = [item['showtime2'] for item in self.data]
-
+            #
         return self.data
 
 
@@ -102,9 +106,9 @@ class News_crawl():
         #conn = MySQLdb.connect(host='127.0.0.1', user='ham', passwd='5864', db='mysql', charset='utf8')
         cur = conn.cursor()
         cur.execute("USE scraping")
-        # cur.execute("ALTER DATABASE scraping CHARACTER SET utf8 COLLATE utf8_general_ci")
-        # cur.execute("ALTER TABLE pages CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci")
-        # cur.execute("ALTER TABLE pages MODIFY news longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci")
+        cur.execute("ALTER DATABASE scraping CHARACTER SET utf8 COLLATE utf8_general_ci")
+        cur.execute("ALTER TABLE pages CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci")
+        cur.execute("ALTER TABLE pages MODIFY news longtext CHARACTER SET utf8 COLLATE utf8_unicode_ci")
         #csv_data = csv.reader(open('/home/ham/Envs/scrapy/naverNews1.csv', 'r'))
         query = "INSERT INTO pages (news, source, showtime, showtime2, showtime3) VALUES (%s, %s, %s, %s, %s)"
 
@@ -128,11 +132,35 @@ class News_crawl():
 # a.dicToMysql()
 
 
-if __name__=='__main__':
-        print 'starting crawl.py...'
-        startDate = input("Start Date(yyyy,m,d): ")
-        endDate = input("End Date(yyyy,m,d): ")
+if __name__ == '__main__':
+        print ('starting crawl.py...')
+        a = News_crawl()
+        # a.dicToMysql()
+        sDate = input("Start Date(yyyy,m,d): ")
+        eDate = input("End Date(yyyy,m,d): ")
+        a.getDateUrl(sDate, eDate)
+        print ('parsing dates...')
+        a.scrape_SaveCsv()
+        print ('scraping and save to Csv file...')
+        a.csvToDic()
+        print ('converting csv file to dictionary')
+        a.dicToMysql()
+        print ('sending dictionay to Mysql..')
 
+
+
+        # query = """INSERT INTO pages (news, source, showtime, showtime2, showtime3) VALUES ('%s', '%s', '%s', '%s', '%s')"""
+        # news_list = [item['news'] for item in self.data]
+        # source_list = [item['source'] for item in self.data]
+        # showtime_list = [item['showtime'] for item in self.data]
+        # showtime2_list = [item['showtime2'] for item in self.data]
+        # showtime3_list = [item['showtime2'] for item in self.data]
+
+
+        #
+        #
+        #
+        #
         # values = ()
         # for row in csv_data:
         # #     print(row)

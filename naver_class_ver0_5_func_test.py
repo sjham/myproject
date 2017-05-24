@@ -3,6 +3,7 @@
 from selenium import webdriver
 import csv
 import time
+import random
 import pymysql
 import MySQLdb
 from bs4 import BeautifulSoup
@@ -16,10 +17,10 @@ class News_crawl():
     def getDate(self):
         # startDate = input("Start Date(yyyy,m,d): ")
         # endDate = input("End Date(yyyy,m,d): ")
-        startDate = "2017,5,21"
-        endDate = "2017,5,22"
-        date1 = datetime.strptime(startDate, "%Y,%m,%d")
-        date2 = datetime.strptime(endDate, "%Y,%m,%d")
+        self.startDate = "2017,5,1"
+        self.endDate = "2017,5,2"
+        date1 = datetime.strptime(self.startDate, "%Y,%m,%d")
+        date2 = datetime.strptime(self.endDate, "%Y,%m,%d")
         delta = date2 - date1
         self.datesSet = []
         for i in range(delta.days + 1):
@@ -30,7 +31,7 @@ class News_crawl():
 
 
     def getUrls(self):
-        News_crawl.getDate(self)
+        #News_crawl.getDate(self)
         self.urls = []
         for i in self.datesSet:
             self.urls.append("http://news.naver.com/main/history/mainnews/list.nhn?date=%s" % i)
@@ -38,9 +39,13 @@ class News_crawl():
 
 
     def scrape_SaveCsv(self):
-        News_crawl.getUrls(self)
+        #News_crawl.getUrls(self)
         driver = webdriver.PhantomJS()
-        csvFile = open("/home/ham/Envs/scrapy/naverNews1.csv", 'wt', newline='', encoding='utf-8')
+        n = self.startDate.replace(',', '_')
+        n1 = self.endDate.replace(',', '_')
+        #n = random.sample(range(1, 100), 1)
+        tmpFile = "/home/ham/Envs/scrapy/naverNews_%s_to_%s.csv" % (n, n1)
+        csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
         writer = csv.writer(csvFile)
         writer.writerow(('news', 'source', 'showtime', 'showtime2', 'showtime3'))
 
@@ -81,7 +86,11 @@ class News_crawl():
         self.data = []
         with open("/home/ham/Envs/scrapy/naverNews1.csv") as csvfile:
             reader = csv.DictReader(csvfile)
+            # next(reader)
             for line in reader:
+                for key, value in line.items():
+                    if value is None:
+                        line[key] = ''
                 self.data.append(line)
             # news_list = [item['news'] for item in self.data]
             # source_list = [item['source'] for item in self.data]
@@ -91,11 +100,12 @@ class News_crawl():
 
         return self.data
 
-
+#
 # a = News_crawl()
 # a.csvToDic()
+# print(a.data)
 # #
-#
+# #
     def dicToMysql(self):
         result = News_crawl.csvToDic(self)
         conn = pymysql.connect(host='127.0.0.1', user='ham', passwd='5864', db='mysql', charset='utf8')
@@ -128,27 +138,48 @@ class News_crawl():
 # a.dicToMysql()
 
 
-if __name__=='__main__':
-        print 'starting crawl.py...'
-        startDate = input("Start Date(yyyy,m,d): ")
-        endDate = input("End Date(yyyy,m,d): ")
+if __name__ == '__main__':
+        print ('starting crawl.py...')
+        a = News_crawl()
+        a.getDate()
+        print ('getting dates...')
+        a.getUrls()
+        print ('getting urls...')
+        a.scrape_SaveCsv()
+        print ('scraping and save to Csv file...')
+        a.csvToDic()
+        print ('converting csv file to dictionary')
+        a.dicToMysql()
+        print ('sending dictionay to Mysql..')
 
-        # values = ()
-        # for row in csv_data:
-        # #     print(row)
-        # #     splited = str(row).split(',')
-        # #     news = splited[0]
-        #     cur.execute(sql, value)
-        #     """INSERT INTO pages (news, source, showtime, showtime2, showtime3) VALUES ('%s', '%s', '%s', '%s', '%s')""" ,row)
-        #     #cur.execute("""INSERT INTO pages (news, source, showtime, showtime2, showtime3) VALUES ('%s', '%s', '%s', '%s', '%s')""")
-        #     #query = """INSERT INTO pages (news, source, showtime, showtime2, showtime3) VALUES ('%s', '%s', '%s', '%s', '%s')"""
+        # a.dicToMysql()
+        # sDate = input("Start Date(yyyy,m,d): ")
+        # eDate = input("End Date(yyyy,m,d): ")
+        # a.getDateUrl(sDate, eDate)
+        # print ('parsing dates...')
+        # a.scrape_SaveCsv()
+        # print ('scraping and save to Csv file...')
+        # a.csvToDic()
+        # print ('converting csv file to dictionary')
+        # a.dicToMysql()
+        # print ('sending dictionay to Mysql..')
 
-        #values = (news, source, showtime, showtime2, showtime3)
-        #cur.execute(query, values)
-        #cur.execute("INSERT INTO pages(news, source, showtime) VALUES({0},{1},{2})".format(row))
-        #conn.commit()
-        #cur.connection.commit()
-
+#         values = ()
+#         for row in csv_data:
+#         #     print(row)
+#         #     splited = str(row).split(',')
+#         #     news = splited[0]
+#             cur.execute(sql, value)
+#             """INSERT INTO pages (news, source, showtime, showtime2, showtime3) VALUES ('%s', '%s', '%s', '%s', '%s')""" ,row)
+#             #cur.execute("""INSERT INTO pages (news, source, showtime, showtime2, showtime3) VALUES ('%s', '%s', '%s', '%s', '%s')""")
+#             #query = """INSERT INTO pages (news, source, showtime, showtime2, showtime3) VALUES ('%s', '%s', '%s', '%s', '%s')"""
 #
-# a = News_crawl()
+#         values = (news, source, showtime, showtime2, showtime3)
+#         cur.execute(query, values)
+#         cur.execute("INSERT INTO pages(news, source, showtime) VALUES({0},{1},{2})".format(row))
+#         conn.commit()
+#         cur.connection.commit()
+#
+# #
+# # a = News_crawl()
 # a.csvToMysql()
