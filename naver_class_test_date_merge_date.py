@@ -29,10 +29,10 @@ class News_crawl():
             newsDates = str(rawDates).replace("00:00:00", "").rstrip()
             self.datesSet.append(newsDates)
 
-        urls = []
+        self.urls = []
         for i in self.datesSet:
-            urls.append("http://news.naver.com/main/history/mainnews/list.nhn?date=%s" % i)
-        return urls
+            self.urls.append("http://news.naver.com/main/history/mainnews/list.nhn?date=%s" % i)
+        return self.urls
 
 #
 # a = News_crawl()
@@ -48,7 +48,7 @@ class News_crawl():
         writer = csv.writer(csvFile)
         writer.writerow(('news', 'source', 'showtime', 'showtime2', 'showtime3'))
 
-        for url in self.urls:
+        for url in getDateUrl.urls:
             driver.get(url)
             html = driver.page_source
             soup = BeautifulSoup(html, 'html.parser')

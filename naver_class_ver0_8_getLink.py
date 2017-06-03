@@ -62,7 +62,8 @@ class News_crawl():
                     for self.showTime in item.findAll(attrs={'class': 'eh_edittime'}):
                         self.dataRow.append(self.showTime.get_text().strip())
                     writer.writerow(self.dataRow)
-
+                    # for link in soup.find_all('a'):
+                        # print(link.get('href'))
                 driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
                 time.sleep(5)
                 driver.page_source

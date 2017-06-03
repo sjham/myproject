@@ -123,15 +123,15 @@ class News_crawl():
         #cur.connection.commit()
         conn.close()
 
+
+a = News_crawl()
+a.dicToMysql()
+
 #
-# a = News_crawl()
-# a.dicToMysql()
-
-
-if __name__=='__main__':
-        print 'starting crawl.py...'
-        startDate = input("Start Date(yyyy,m,d): ")
-        endDate = input("End Date(yyyy,m,d): ")
+# if __name__=='__main__':
+#         print 'starting crawl.py...'
+#         startDate = input("Start Date(yyyy,m,d): ")
+#         endDate = input("End Date(yyyy,m,d): ")
 
         # values = ()
         # for row in csv_data:

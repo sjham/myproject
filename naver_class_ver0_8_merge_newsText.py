@@ -41,10 +41,12 @@ class News_crawl():
         tmpFile = "/home/ham/Envs/scrapy/naverNews_%s_to_%s.csv" % (n, n1)
         csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
         writer = csv.writer(csvFile)
-        writer.writerow(('news', 'source', 'showtime', 'showtime2', 'showtime3'))
+        writer.writerow(['news', 'source', 'showtime', 'showtime2', 'showtime3', 'newstext'])
 
         for url in self.urls:
             driver.get(url)
+            window_before = driver.window_handles[0]
+
             html = driver.page_source
             soup = BeautifulSoup(html, 'html.parser')
             scrap = soup.select('ul.mlist2 > li')
@@ -61,15 +63,60 @@ class News_crawl():
                         self.dataRow.append(self.source.get_text().strip())
                     for self.showTime in item.findAll(attrs={'class': 'eh_edittime'}):
                         self.dataRow.append(self.showTime.get_text().strip())
+                itemTuples = []
+                #dataRow = []
+                for i in range(1, 5):
+                    for j in range(1, 6):
+                        itemTuples.append((i, j))
+                print(itemTuples)
+                for i in itemTuples:
+                    #self.dataRow = []
+                    driver.find_element_by_xpath('//*[@id="h.m.text"]/ul[%d]/li[%d]/a' % i).click()
+                    #driver.implicitly_wait(3)
+                    #time.sleep(5)
+                    window_after = driver.window_handles[1]
+                    driver.switch_to_window(window_after)
+                    time.sleep(2)
+                    demo_div = driver.find_element_by_id("articleBodyContents")
+                    newsText = demo_div.get_attribute('innerText')
+                    #time.sleep(5)
+                    #driver.implicitly_wait(10)
+                    self.dataRow.append([newsText.replace('\n\n', '').strip()])
+                    driver.close()
+                    driver.switch_to_window(window_before)
+                    time.sleep(2)
+                    print(self.dataRow)
                     writer.writerow(self.dataRow)
+                    #
+                    # itemTuples = []
+                    # for i in range(1, 5):
+                    #     for j in range(1, 6):
+                    #         itemTuples.append((i, j))
+                    # for i in itemTuples:
+                    #     driver.find_element_by_xpath('//*[@id="h.m.text"]/ul[%d]/li[%d]/a' % i).click()
+                    #     driver.implicitly_wait(3)
+                    #     window_after = driver.window_handles[1]
+                    #     driver.switch_to_window(window_after)
+                    #     demo_div = driver.find_element_by_id("articleBodyContents")
+                    #     newsText = demo_div.get_attribute('innerText')
+                    #     #self.dataRow.append(demo_div.get_attribute('innerText'))
+                    #     #print(newsText)
+                    #     driver.implicitly_wait(10)
+                    #     #print(newsText.replace('\n', ''))
+                    #     self.dataRow.append(newsText.replace('\n\n', '').strip())
+                    #     driver.close()
+                    #     driver.switch_to_window(window_before)
+                    # #driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
+                    #time.sleep(5)
+                    #writer.writerow(self.dataRow)
 
                 driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
                 time.sleep(5)
                 driver.page_source
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 scrap = soup.select('ul.mlist2 > li')
+        driver.close()
 
-        driver.quit()
         csvFile.close()
         return
 
@@ -100,19 +147,22 @@ class News_crawl():
         conn = pymysql.connect(host='127.0.0.1', user='ham', passwd='5864', db='mysql', charset='utf8')
         cur = conn.cursor()
         cur.execute("USE scraping")
-        query = "INSERT INTO pages (news, source, showtime, showtime2, showtime3) VALUES (%s, %s, %s, %s, %s)"
+        query = "INSERT INTO pages (news, source, showtime, showtime2, showtime3, newstext) VALUES (%s, %s, %s, %s, %s, %s)"
 
         news_list = [item['news'] for item in result]
         source_list = [item['source'] for item in result]
         showtime_list = [item['showtime'] for item in result]
         showtime2_list = [item['showtime2'] for item in result]
-        showtime3_list = [item['showtime2'] for item in result]
+        showtime3_list = [item['showtime3'] for item in result]
+        newstext_list = [item['newstext'] for item in result]
         print(news_list)
         print(source_list)
         print(showtime_list)
         print(showtime2_list)
         print(showtime3_list)
-        values = (",".join(news_list), ",".join(source_list), ",".join(showtime_list), ",".join(showtime2_list), ",".join(showtime3_list))
+        print(newstext_list)
+
+        values = (",".join(news_list), ",".join(source_list), ",".join(showtime_list), ",".join(showtime2_list), ",".join(showtime3_list), ",".join(newstext_list))
         cur.execute(query, values)
         conn.commit()
         cur.close()
@@ -128,13 +178,13 @@ if __name__ == '__main__':
         print ('getting dates...')
         a.startDate = input("Start Date(yyyy,m,d): ")
         a.endDate = input("End Date(yyyy,m,d): ")
-        a.getDate()
         print ('getting dates...')
-        a.getUrls()
+        a.getDate()
         print ('getting urls...')
-        a.scrape_SaveCsv()
+        a.getUrls()
         print ('scraping and save to Csv file...')
-        a.csvToDic()
+        a.scrape_SaveCsv()
         print ('converting csv file to dictionary')
-        a.dicToMysql()
+        a.csvToDic()
         print ('sending dictionay to Mysql..')
+        a.dicToMysql()

@@ -78,7 +78,7 @@ class News_crawl():
                 for item in scrap:
                     #self.dataRow = []
                     #self.dataRow =
-                    writer.writeheader()
+                    #writer.writeheader()
                     for self.news in item.findAll(['a']):
                         writer.writerow({'news': self.news.get_text().strip()})
                         # self.dataRow.append(self.news.get_text().strip())
