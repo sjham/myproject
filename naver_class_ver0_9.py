@@ -2,12 +2,13 @@
 # csv file name
 # remove None from dictionary
 # remove func first line of calling class instance
+# merge_two Csv files with pandas
+# remove duplicated item in csvs
 from selenium import webdriver
 import csv
 import pandas as pd
 import time
 import pymysql
-#import MySQLdb
 from bs4 import BeautifulSoup
 from datetime import timedelta, datetime
 
@@ -43,21 +44,18 @@ class News_crawl():
         tmpFile = "/home/ham/Envs/scrapy/naverNews_%s_to_%s.csv" % (n, n1)
         self.csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
         writer = csv.writer(self.csvFile)
-        writer.writerow(['news', 'source', 'showtime', 'showtime2', 'showtime3'])
+        writer.writerow(['news', 'source', 'showtime', 'showtime2', 'showtime3','newstext'])
 
         for url in self.urls:
             driver.get(url)
-            #window_before = driver.window_handles[0]
             html = driver.page_source
             soup = BeautifulSoup(html, 'html.parser')
             scrap = soup.select('ul.mlist2 > li')
             exmaxNum = driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[1]').text
             splitNum = exmaxNum.split('/')
             self.maxNum = int(splitNum[1])
-            #newstexts = driver.find_elements_by_xpath('//li/a[@href]')
 
             for pageId in range(self.maxNum):
-
                 for item in scrap:
                     self.dataRow = []
                     for self.news in item.findAll(['a']):
@@ -66,20 +64,7 @@ class News_crawl():
                         self.dataRow.append(self.source.get_text().strip())
                     for self.showTime in item.findAll(attrs={'class': 'eh_edittime'}):
                         self.dataRow.append(self.showTime.get_text().strip())
-                    # for self.newstext in newstexts:
-                    #     self.newstext.click()
-                    #     # window_after = driver.window_handles[1]
-                    #     # driver.switch_to_window(window_after)
-                    #     # time.sleep(2)
-                    #     demo_div = driver.find_element_by_id("articleBodyContents")
-                    #     newsText = demo_div.get_attribute('innerText')
-                    #     self.dataRow.append(newsText.strip())
-                    #     driver.close()
-                    #     driver.switch_to_window(window_before)
-                    #     time.sleep(2)
-
                     writer.writerow(self.dataRow)
-
                 driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
                 time.sleep(5)
                 driver.page_source
@@ -109,7 +94,6 @@ class News_crawl():
             #writer = csv.DictWriter(csvFile, fieldnames=["textNews"])
             #writer.writeheader()
             for pageId in range(self.maxNum):
-                #dataRow = []
                 for i in itemTuples:
                     textRow = []
                     driver.find_element_by_xpath('//*[@id="h.m.text"]/ul[%d]/li[%d]/a' % i).click()
@@ -118,13 +102,6 @@ class News_crawl():
                     time.sleep(2)
                     demo_div = driver.find_element_by_id("articleBodyContents")
                     newsText = demo_div.get_attribute('innerText')
-                    #time.sleep(5)
-    #                 #driver.implicitly_wait(10)
-    #                 reader = csv.reader(self.csvFile)
-    #                 writer = csv.writer(self.csvFile)
-    #                 for row in reader:
-    #                     row.append([newsText.replace('\n\n', '').strip()])
-    #                 writer.writerow(row)
                     textRow.append([newsText.replace('\n\n', '').strip()])
                     driver.close()
                     driver.switch_to_window(window_before)
@@ -138,14 +115,24 @@ class News_crawl():
         self.csvFile.close()
         return
 
+    def duplicateItemRemove(self):
+        firstCsv = input("Enter the name of first file to singlify: ")
+        secondCsv = input("Enter the name of second file to singlify: ")
+        with open(firstCsv, 'r') as in_file, open(secondCsv, 'w') as out_file:
+            seen = set() # set for fast O(1) amortized lookup
+            for line in in_file:
+                if line in seen: continue # skip duplicate
+                seen.add(line)
+                out_file.write(line)
+        return
+
     def merge_twoCsvs(self):
         firstCsv = input("Enter the name of first file to merge: ")
         secondCsv = input("Enter the name of second file to merge: ")
         test1 = pd.read_csv(firstCsv)
         test2 = pd.read_csv(secondCsv)
         test3 = pd.concat([test1, test2], axis=1)
-        #test3.DataFrame.to_csv("/home/ham/Envs/scrapy/naverNews_'%s'_to_'%s'_newsdata_merged.csv" % (firstCsv, secondCsv))
-        test3.to_csv("/home/ham/Envs/scrapy/MyProject/naverNews_merged.csv")
+        test3.to_csv("/home/ham/Envs/scrapy/naverNews_merged.csv")
 
     def csvToDic(self):
         self.data = []
@@ -157,11 +144,6 @@ class News_crawl():
                     if value is None:
                         line[key] = 0
                 self.data.append(line)
-            # news_list = [item['news'] for item in self.data]
-            # source_list = [item['source'] for item in self.data]
-            # showtime_list = [item['showtime'] for item in self.data]
-            # showtime2_list = [item['showtime2'] for item in self.data]
-            # showtime3_list = [item['showtime2'] for item in self.data]
         return self.data
 # a = News_crawl()
 # a.csvToDic()
