@@ -31,9 +31,10 @@ for i in range(delta.days + 1):
         maxNum = int(splitNum[1])
 
         for pageId in range(maxNum):
+
             for item in scrap:
                 csvRow = []
-                for news in item.findAll(['a']):
+                news in item.findAll(['a']):
                     csvRow.append(news.get_text().strip())
                 for source in item.findAll(attrs={'class': 'writing'}):
                     csvRow.append(source.get_text().strip())

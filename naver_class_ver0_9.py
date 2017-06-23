@@ -42,8 +42,8 @@ class News_crawl():
         n = self.startDate.replace(',', '_')
         n1 = self.endDate.replace(',', '_')
         tmpFile = "/home/ham/Envs/scrapy/naverNews_%s_to_%s.csv" % (n, n1)
-        self.csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
-        writer = csv.writer(self.csvFile)
+        csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
+        writer = csv.writer(csvFile)
         writer.writerow(['news', 'source', 'showtime', 'showtime2', 'showtime3','newstext'])
 
         for url in self.urls:
@@ -71,7 +71,7 @@ class News_crawl():
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 scrap = soup.select('ul.mlist2 > li')
         driver.quit()
-        self.csvFile.close()
+        csvFile.close()
         return
 
     def scrape_newsText(self):
@@ -99,7 +99,7 @@ class News_crawl():
                     driver.find_element_by_xpath('//*[@id="h.m.text"]/ul[%d]/li[%d]/a' % i).click()
                     window_after = driver.window_handles[1]
                     driver.switch_to_window(window_after)
-                    time.sleep(2)
+                    time.sleep(5)
                     demo_div = driver.find_element_by_id("articleBodyContents")
                     newsText = demo_div.get_attribute('innerText')
                     textRow.append([newsText.replace('\n\n', '').strip()])
@@ -107,18 +107,17 @@ class News_crawl():
                     driver.switch_to_window(window_before)
                     time.sleep(2)
                     writer.writerow(textRow)
-                    print(textRow)
+                    #print(textRow)
                 driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
                 time.sleep(5)
-
         driver.quit()
-        self.csvFile.close()
+        csvFile.close()
         return
 
     def duplicateItemRemove(self):
-        firstCsv = input("Enter the name of first file to singlify: ")
-        secondCsv = input("Enter the name of second file to singlify: ")
-        with open(firstCsv, 'r') as in_file, open(secondCsv, 'w') as out_file:
+        dupedCsv = input("Enter the name of file to singlify: ")
+        singledCsv = input("Enter the name of file singlified: ")
+        with open(dupedCsv, 'r') as in_file, open(singledCsv, 'w') as out_file:
             seen = set() # set for fast O(1) amortized lookup
             for line in in_file:
                 if line in seen: continue # skip duplicate
@@ -195,7 +194,8 @@ if __name__ == '__main__':
         # print ('converting csv file to dictionary')
         # a.scrape_newsText()
         # print ('scraping news Text...')
-        a.merge_twoCsvs()
+        a.duplicateItemRemove()
+        #a.merge_twoCsvs()
         # # a.csvToDic()
         # print ('sending dictionay to Mysql..')
         # a.dicToMysql()
