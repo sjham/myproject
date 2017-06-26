@@ -17,7 +17,6 @@ from datetime import timedelta, datetime
 class News_crawl():
     def __init__(self):
         print("Start Crawler")
-        #
         # bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
         # for i in range(20):
         #     time.sleep(0.1)
@@ -51,17 +50,17 @@ class News_crawl():
         csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
         writer = csv.writer(csvFile)
         writer.writerow(['news', 'source', 'showtime', 'showtime2', 'showtime3'])
-
         for url in self.urls:
             driver.get(url)
             html = driver.page_source
             soup = BeautifulSoup(html, 'html.parser')
-            scrap = soup.select('ul.mlist2 > li')
+            #scrap = soup.select('ul.mlist2 > li')
             exmaxNum = driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[1]').text
             splitNum = exmaxNum.split('/')
             self.maxNum = int(splitNum[1])
 
             for pageId in range(self.maxNum):
+                scrap = soup.select('ul.mlist2 > li')
                 for item in scrap:
                     self.dataRow = []
                     for self.news in item.findAll(['a']):
@@ -72,10 +71,10 @@ class News_crawl():
                         self.dataRow.append(self.showTime.get_text().strip())
                     writer.writerow(self.dataRow)
                 driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
-                time.sleep(5)
+                time.sleep(2)
                 driver.page_source
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
-                scrap = soup.select('ul.mlist2 > li')
+                #scrap = soup.select('ul.mlist2 > li')
         driver.quit()
         csvFile.close()
         return
@@ -109,6 +108,7 @@ class News_crawl():
                     #time.sleep(5)
                     demo_div = driver.find_element_by_id("articleBodyContents")
                     newsText = demo_div.get_attribute('innerText')
+                    #newsText = get_attribute('innerText')
                     textRow.append([newsText.replace('\n\n', '').strip()])
                     driver.close()
                     driver.switch_to_window(window_before)

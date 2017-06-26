@@ -4,7 +4,6 @@
 # remove func first line of calling class instance
 # merge_two Csv files with pandas
 # remove duplicated item in csvs
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -179,24 +178,28 @@ class News_crawl():
             print(maxNum)
             for pageId in range(maxNum):
                 print("get_wholeHtml pageId processing")
-                find_div = driver.find_element_by_id('h.m.text')
-                newsHtml = find_div.get_attribute('outerHTML')
+                #demo_div = driver.find_element_by_tag_name('html')
+                demo_div = driver.find_element_by_id('h.m.text')
+                newsHtml = demo_div.get_attribute('outerHTML')
                 self.wholeHTML.append(newsHtml)
                 # newsLinks = driver.find_elements_by_css_selector('ul.mlist2 > li > a')
                 # self.wholeNewsLinks.append(newsLinks)
                 driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
                 time.sleep(2)
-        driver.quit()
-        return self.wholeHTML
-
-    def saveTo_localHtml(self):
+        #print(self.wholeHTML)
         n = self.startDate.replace(',', '_')
         n1 = self.endDate.replace(',', '_')
         tmpFile = "/home/ham/Envs/scrapy/naverNews_%s_to_%s_webpage.html" % (n, n1)
         with open(tmpFile, 'wt', encoding='utf-8') as htmlFile:
             htmlFile.write(str(self.wholeHTML))
+            # for wh in self.wholeHTML:
+            #     htmlFile.write(wh)
+                #file:///file/location
+                #print(self.wholeHTML)
+        driver.quit()
+        #d = datetime.now()
         print(datetime.now())
-        return
+        return self.wholeHTML
 
     def get_wholeHtml2(self):
         driver = webdriver.PhantomJS()
@@ -224,7 +227,7 @@ class News_crawl():
         # driver.quit()
         # return self.wholeHTML
 
-    def scrape_news_line_bySoup(self):
+    def scrape_newsText(self):
         # Scrape title, source, showing time, news text between certain dates.
         # CSV file
         #html = driver.page_source
@@ -233,185 +236,139 @@ class News_crawl():
         tmpFile = "/home/ham/Envs/scrapy/naverNews_%s_to_%s_merged.csv" % (n, n1)
         csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
         writer = csv.writer(csvFile)
-        writer.writerow(['newsTitle', 'source', 'showtime', 'showtime1', 'showtime2', 'newsText'])
+        writer.writerow(['newsTitle', 'source', 'showtime', 'newsText'])
         #driver = webdriver.PhantomJS()
-        #self.textRow = []
-        # self.textRow1 = []
-        # self.textRow2 = []
-
-        for html in self.wholeHTML:
-            #self.textRow = []
-            print("scrape_newsLine with Beautifulsoup self.wholeHTML processing")
-            #print(html)
-            soup = BeautifulSoup(html, 'html.parser')
-            scrap = soup.select('ul.mlist2 > li')
-            for item in scrap:
-                self.textRow = []
-                newstitle = item.find('a')
-                self.textRow.append([newstitle.text.strip()])
-                source = item.find(attrs={'class': 'writing'})
-                self.textRow.append([source.text.strip()])
-                showtime = item.findAll(attrs={'class': 'eh_edittime'})
-                for sh in showtime:
-                    self.textRow.append([sh.text.strip()])
-                writer.writerow(self.textRow)
-
-            #     find('span', class_='eh_edittime').text
-            # # #newstitles = soup.findAll('a', attrs={'class':'nclicks'})
-            # newstitles = soup.select('ul.mlist2 > li > a')
-            # for newstitle in newstitles:
-            #     self.textRow.append([newstitle.text.strip()])
-            # sources = soup.findAll(attrs={'class': 'writing'})
-            # for source in sources:
-            #     self.textRow.append([source.text.strip()])
-            # showtimes = soup.findAll(attrs={'class': 'eh_edittime'})
-            # for showtime in showtimes:
-            #     self.textRow.append([showtime.text.strip()])
-            # writer.writerow(self.textRow)
-            #
-            # #
-            # showtimelist = soup.select('ul.mlist2 > li > span.mlist2_info')
-            #
-            # for sh in showtimelist:
-            #     sh2 = sh.findall('span', class_='eh_edittime')
-            #     for sh3 in sh2:
-            #         self.textRow2.append([sh3.text.strip()])
-            #
-            #     #showtime = sh.find('span', class_='eh_edittime').text
-                #
-
-
-
-            #print(newstitles)
-            # self.textRow = [[newstitle.text.strip()] for newstitle in newstitles]
-            # sources = soup.findAll(attrs={'class': 'writing'})
-            # self.textRow1 = [[source.text.strip()] for source in sources]
-            # self.textRow2 = []
-            # showtimelist = soup.select('ul.mlist2 > li > span.mlist2_info')
-            # for sh in showtimelist:
-            #     showtime = sh.find('span', class_='eh_edittime').text
-            #     #
-                # showtime = sh.select('span.mlist2_info > span:nth-of-type(3)')[0].get_text()
-                # showtime1 = sh.select('span.mlist2_info > span:nth-of-type(5)')[0].get_text()
-                # showtime2 = sh.select('span.mlist2_info > span:nth-of-type(7)')[0].get_text()
-                # #showtimemerged = showtime+showtime1+showtime2
-                #self.textRow2.append(str(showtimemerged.get_text.strip())
-                # self.textRow2.append(showtime)
-            #
-            # #for item in html:
-            #     #print("scrape_newsText for item in html processing")
-            # showtimes = soup.select('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(3)')
-            # self.textRow2 = [[showtime.text.strip()] for showtime in showtimes]
-            # print(self.textRow2)
-            # # showtimes1 = soup.select('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(5)')
-            # self.textRow3 = [[showtime.text.strip()] for showtime in showtimes1]
-            # showtimes2 = soup.select('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(7)')
-            # self.textRow4 = [[showtime.text.strip()] for showtime in showtimes2]
-            #     # showtimes3 = soup.select('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(9)')
-                # textRow5 = [[showtime.text.strip()] for showtime in showtimes3]
-        #     for i in zip_longest(self.textRow, self.textRow1, self.textRow2, self.textRow3, self.textRow4, fillvalue='_'):
-        #         writer.writerow(i)
-        #
-        # csvFile.close()
-        #return
-        #print(self.textRow, self.textRow1, self.textRow2)
-        return self.textRow
-
-    def scrape_news_line_bySelenium(self):
-        self.linkFile = input("upload link file:")
-        driver = webdriver.PhantomJS()
-        driver.get(self.linkFile)
-        #driver.get('file:///home/ham/Envs/scrapy/naverNews_2017_3_1_to_2017_3_2_webpage.html')
-        #window_before = driver.window_handles[0]
-        newsLinks = driver.find_elements_by_css_selector('ul.mlist2 > li > a')
-        self.textRow = [[newstitle.text.strip()] for newstitle in newsLinks]
-        sources = driver.find_elements_by_css_selector('ul.mlist2 > li > span > span.writing')
-        self.textRow1 = [[source.text.strip()] for source in sources]
-        showtimelist = driver.find_elements_by_css_selector('ul.mlist2 > li > span.mlist2_info')
-        self.textRow2 = []
-        for sh in showtimelist:
-            showtime = driver.find_elements_by_class_name('eh_edittime')
-            for sh2 in showtime:
-                self.textRow2.append(sh2.text.strip())
-#
-#
-#             self.textRow2.append([sh.find('span', class_='eh_edittime').text.strip()])
-# driver.find_element(By.CSS_SELECTOR, 'p.content:nth-child(1)')
-#
-#             showtime = driver.find_element_by_css_selector('span.mlist2_info > span:nth-of-type(3)')
-#             showtime1 = driver.find_element_by_css_selector('span.mlist2_info > span:nth-of-type(5)')
-#             showtime2 = driver.find_element_by_css_selector('span.mlist2_info > span:nth-of-type(7)')
-#             showtimemerged = showtime+showtime1+showtime2
-#             self.textRow2.append(showtimemerged.text.strip())
-        return self.textRow, self.textRow1, self.textRow2
-
-    def scrape_news_text_bySelenium(self):
-        driver = webdriver.PhantomJS()
-        driver.get(self.linkFile)
-        window_before = driver.window_handles[0]
-        newsLinks = driver.find_elements_by_css_selector('ul.mlist2 > li > a')
-        self.textRow5 = []
-        for link in newsLinks:
-            print("link Processing")
-            link.click()
-            #time.sleep(2)
-            window_after = driver.window_handles[1]
-            driver.switch_to_window(window_after)
-            wait = WebDriverWait(driver, 20)
-            wait.until(EC.visibility_of_element_located((By.ID, 'articleBodyContents')))
-            #time.sleep(5)
-            newstextID = driver.find_element_by_id('articleBodyContents')
-            newsText = newstextID.get_attribute('innerText')
-            self.textRow5.append([newsText.replace('\n\n', '').strip()])
-            #writer.writerow([newsText.replace('\n\n', '').strip()])
-            driver.close()
-            driver.switch_to_window(window_before)
-
-        return self.textRow5
-        #
-        # showtimes = driver.find_elements_by_css_selector('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(3)')
-        # self.textRow2 = [[showtime.text.strip()] for showtime in showtimes]
-        # showtimes1 = driver.find_elements_by_css_selector('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(5)')
-        # self.textRow3 = [[showtime.text.strip()] for showtime in showtimes1]
-        # showtimes2 = driver.find_elements_by_css_selector('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(7)')
-        # self.textRow4 = [[showtime.text.strip()] for showtime in showtimes2]
-        #newsLinks = driver.find_elements_by_css_selector('ul.mlist2 > li > a')
-        #print(newsLinks)
-
-
-
-        #return self.textRow, self.textRow1, self.textRow2, self.textRow3, self.textRow4
-
-    def scrape_WholeNews(self):
-        print(datetime.now())
-        # n = self.startDate.replace(',', '_')
-        # n1 = self.endDate.replace(',', '_')
-        # tmpFile = "/home/ham/Envs/scrapy/naverNews_%s_to_%s_newstext.csv" % (n, n1)
-        # csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
-        # writer = csv.writer(csvFile)
-        # writer.writerow(['newsTitle', 'source', 'showtime', 'newsText'])
-        #writer.writerow(['newsTitle', 'source', 'showtime', 'showtime1', 'showtime2', 'newsText'])
-
-        # #driver = webdriver.PhantomJS()
         linkFile = input("upload link file:")
         driver = webdriver.PhantomJS()
         driver.get(linkFile)
         window_before = driver.window_handles[0]
         newsLinks = driver.find_elements_by_css_selector('ul.mlist2 > li > a')
+        for html in self.wholeHTML:
+            #driver.get(html)
+            #window_before = driver.window_handles[0]
+            #html2 = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            scrap = soup.select('ul.mlist2 > li')
+            print("scrape_newsText for html in self.wholeHTML processing")
+            for item in scrap:
+                self.dataRow = []
+                for self.news in item.findAll(['a']):
+                    self.dataRow.append(self.news.get_text().strip())
+                for self.source in item.findAll(attrs={'class': 'writing'}):
+                    self.dataRow.append(self.source.get_text().strip())
+                for self.showTime in item.findAll(attrs={'class': 'eh_edittime'}):
+                    self.dataRow.append(self.showTime.get_text().strip())
+                print(self.dataRow)
+                #self.textRow5 = []
+                for link in newsLinks:
+                    print("link Processing")
+                    link.click()
+                    #time.sleep(2)
+                    window_after = driver.window_handles[1]
+                    driver.switch_to_window(window_after)
+                    wait = WebDriverWait(driver, 20)
+                    wait.until(EC.visibility_of_element_located((By.ID, 'articleBodyContents')))
+                    #time.sleep(5)
+                    newstextID = driver.find_element_by_id('articleBodyContents')
+                    newsText = newstextID.get_attribute('innerText')
+                    self.dataRow.append([newsText.replace('\n\n', '').strip()])
+                    #writer.writerow([newsText.replace('\n\n', '').strip()])
+                    driver.close()
+                    driver.switch_to_window(window_before)
+                print(self.dataRow)
+                writer.writerow(self.dataRow)
+        driver.quit()
+        csvFile.close()
+        return
+
+
+            #
+            # #print(html)
+            # soup = BeautifulSoup(html, 'html.parser')
+            # #newstitles = soup.findAll('a', attrs={'class':'nclicks'})
+            # newstitles = soup.select('ul.mlist2 > li > a')
+            # #print(newstitles)
+            # self.textRow = [[newstitle.text.strip()] for newstitle in newstitles]
+            # print(self.textRow)
+            # sources = soup.findAll(attrs={'class': 'writing'})
+            # self.textRow1 = [[source.text.strip()] for source in sources]
+            # print(self.textRow1)
+            #for item in html:
+                #print("scrape_newsText for item in html processing")
+            #self.textRow2 =[]
+            # for item in html:
+            #     showtimes = soup.select('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(3)')
+            #     self.textRow2.append([showtimes.text.strip()])
+            #     showtimes1 = soup.select('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(5)')
+            #     self.textRow2.append([showtimes1.text.strip()])
+            #     showtimes2 = soup.select('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(7)')
+            #     self.textRow2.append([showtim//*[@id="h.m.text"]/ul[1]/li[1]/span/span[3]es2.text.strip()])
+
+                #print(self.textRow2)
+        #     showtimes1 = soup.select('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(5)')
+        #     self.textRow3 = [[showtime.text.strip()] for showtime in showtimes1]
+        #     showtimes2 = soup.select('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(7)')
+        #     self.textRow4 = [[showtime.text.strip()] for showtime in showtimes2]
+        #     showtimes3 = soup.select('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(9)')
+        #     self.textRow5 = [[showtime.text.strip()] for showtime in showtimes3]
+        #     #textRow5 = [[showtime.text.strip()] for showtime in showtimes3]
+        # #     for i in zip_longest(self.textRow, self.textRow1, self.textRow2, self.textRow3, self.textRow4, fillvalue='_'):
+        # #         writer.writerow(i)
+        #     print(self.textRow2)
+        #
+        # # csvFile.close()
+        # #return
+        #
+        # return self.textRow, self.textRow1, self.textRow2, self.textRow3, self.textRow4
+
+    def scrape_bodyText(self):
+
+        print(datetime.now())
+
+        n = self.startDate.replace(',', '_')
+        n1 = self.endDate.replace(',', '_')
+        tmpFile = "/home/ham/Envs/scrapy/naverNews_%s_to_%s_newstext.csv" % (n, n1)
+        csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
+        writer = csv.writer(csvFile)
+        writer.writerow(['newsTitle', 'source', 'showtime', 'showtime1', 'showtime2', 'newsText'])
+        # #driver = webdriver.PhantomJS()
+        linkFile = input("upload link file:")
+        driver = webdriver.PhantomJS()
+        driver.get(linkFile)
+        window_before = driver.window_handles[0]
+
+        newsLinks = driver.find_elements_by_css_selector('ul.mlist2 > li > a')
         self.textRow = [[newstitle.text.strip()] for newstitle in newsLinks]
         sources = driver.find_elements_by_css_selector('ul.mlist2 > li > span > span.writing')
         self.textRow1 = [[source.text.strip()] for source in sources]
+        self.textRow2 = []
+        for html in self.wholeHTML:
+            for item in html:
+                showtimes = item.driver.find_element_by_xpath('*/span/span[3]')
+                self.textRow2.append([showtimes.text.strip()])
+                showtimes1 = item.driver.find_element_by_xpath('*/span/span[5]')
+                self.textRow2.append([showtimes1.text.strip()])
+                showtimes2 = item.driver.find_element_by_xpath('*/span/span[7]')
+                self.textRow2.append([showtimes2.text.strip()])
+                #self.textRow2.append([showtimes[2].text.strip()])
 
-        showtimes = driver.find_elements_by_css_selector('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(3)')
-        self.textRow2 = [[showtime.text.strip()] for showtime in showtimes]
+
+                # showtimes1 = driver.find_element_by_css_selector('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(5)')
+                # self.textRow2.append([showtimes1.text.strip()])
+                # showtimes2 = driver.find_element_by_css_selector('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(7)')
+                # self.textRow2.append([showtimes2.text.strip()])
+
+        # showtimes = driver.find_element_by_css_selector('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(3)')
+        # self.textRow2 = [[showtime.text.strip()] for showtime in showtimes]
         # showtimes1 = driver.find_elements_by_css_selector('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(5)')
         # self.textRow3 = [[showtime.text.strip()] for showtime in showtimes1]
         # showtimes2 = driver.find_elements_by_css_selector('ul.mlist2 > li > span.mlist2_info > span:nth-of-type(7)')
         # self.textRow4 = [[showtime.text.strip()] for showtime in showtimes2]
-        #newsLinks = driver.find_elements_by_css_selector('ul.mlist2 > li > a')
-        #print(newsLinks)
+        # #newsLinks = driver.find_elements_by_css_selector('ul.mlist2 > li > a')
+        # #print(newsLinks)
 
         print(datetime.now())
+
         self.textRow5 = []
         for link in newsLinks:
             print("link Processing")
@@ -428,10 +385,9 @@ class News_crawl():
             #writer.writerow([newsText.replace('\n\n', '').strip()])
             driver.close()
             driver.switch_to_window(window_before)
-        #for i in zip_longest(self.textRow, self.textRow1, self.textRow2, self.textRow3, self.textRow4, self.textRow5, fillvalue='_', encoding='utf-8'):
 
-        # for i in zip_longest(self.textRow, self.textRow1, self.textRow2, self.textRow5, fillvalue='_', encoding='utf-8'):
-        #     writer.writerow(i)
+        for i in zip_longest(self.textRow, self.textRow1, self.textRow2, self.textRow5, fillvalue='_', encoding='utf-8'):
+            writer.writerow(i)
         #d = datetime.now()
         print(datetime.now())
         #
@@ -445,18 +401,6 @@ class News_crawl():
         print(self.textRow5)
         return
 
-    def merge_lists_saveCsv(self):
-        print(datetime.now())
-        n = self.startDate.replace(',', '_')
-        n1 = self.endDate.replace(',', '_')
-        tmpFile = "/home/ham/Envs/scrapy/naverNews_%s_to_%s_newstext.csv" % (n, n1)
-        csvFile = open(tmpFile, 'wt', newline='', encoding='utf-8')
-        writer = csv.writer(csvFile)
-        writer.writerow(['newsTitle', 'source', 'showtime', 'newsText'])
-        #for i in zip_longest(self.textRow, self.textRow1, self.textRow2, self.textRow5, fillvalue='_'):
-        for i in zip_longest(self.textRow, self.textRow1, self.textRow2, fillvalue='_'):
-            writer.writerow(i)
-        return
 
         #
         #
@@ -521,7 +465,6 @@ class News_crawl():
             writer = csv.writer(csvFile)
             for i in self.textRow5:
                 writer.writerow(i)
-        csvFile.close()
         return
 
             #writer.writerow(['newsTitle', 'source', 'showtime', 'showtime1', 'showtime2', 'newsText'])
@@ -605,21 +548,12 @@ if __name__ == '__main__':
         print ('getting urls...')
         a.getUrls()
         a.get_wholeHtml()
-        a.saveTo_localHtml()
-        a.scrape_news_line_bySoup()
-        #a.scrape_news_line_bySelenium()
-        #a.scrape_news_text_bySelenium()
-        #a.scrape_WholeNews()
-        #a.merge_lists_saveCsv()
-
-        #a.scrape_WholeNews()
-        #a.scrape_newsline()
         #a.get_wholeHtml()
 
         # print ('scraping and save to Csv file...')
         #a.scrape_saveCsv()
         # print ('converting csv file to dictionary')
-        #a.scrape_newsText()
+        a.scrape_newsText()
         #a.scrape_bodyText()
         # a.saveToCsvFile()
         # # print ('scraping news Text...')

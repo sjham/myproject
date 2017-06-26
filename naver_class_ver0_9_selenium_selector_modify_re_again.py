@@ -79,12 +79,6 @@ class News_crawl():
                     #showTimelist = []
                     newstitles = driver.find_elements_by_css_selector('ul.mlist2 > li > a')
                     self.dataRow.append(newstitles[i].text.strip())
-                    # print(newstitles[0])
-                    # print(newstitles[1])
-                    #
-                    # print(newstitles[2])
-                    # print(newstitles[3])
-
                     sources = driver.find_elements_by_css_selector('ul.mlist2 > li > span > span.writing')
                     self.dataRow.append(sources[i].text.strip())
                     showtimes = driver.find_elements_by_css_selector('ul.mlist2 > li > span > span.eh_edittime')

@@ -194,6 +194,7 @@ class News_crawl():
             #st2 = []
             for pageId in range(maxNum):
                 print(" pageId processing")
+
                 # newstitles = driver.find_elements_by_css_selector('ul.mlist2 > li > a')
                 # print(newstitles)
                 # nt.append(newstitles)
@@ -504,9 +505,9 @@ if __name__ == '__main__':
         print ('getting urls...')
         a.getUrls()
         # print ('scraping and save to Csv file...')
-        #a.scrape_saveCsv()
+        a.scrape_saveCsv()
         # print ('converting csv file to dictionary')
-        a.scrape_newsText()
+        #a.scrape_newsText()
         # print ('scraping news Text...')
         #a.duplicateItemRemove()
         #a.merge_twoCsvs()

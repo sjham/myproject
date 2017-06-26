@@ -39,6 +39,8 @@ class News_crawl():
 
     def scrape_saveCsv(self):
         driver = webdriver.PhantomJS()
+        #driver = webdriver.Remote("http://localhost:4444/wd/hub", webdriver.DesiredCapabilities.HTMLUNIT.copy())
+
         #driver = webdriver.Chrome('/media/sf_share_u/chromedriver_linux64/chromedriver')
         n = self.startDate.replace(',', '_')
         n1 = self.endDate.replace(',', '_')
