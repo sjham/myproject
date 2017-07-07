@@ -4,6 +4,7 @@ import os
 import csv
 import time
 import pymysql
+#import threading
 import pandas as pd
 from datetime import timedelta, datetime
 from itertools import zip_longest
@@ -14,6 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 #from selenium.common.exceptions import WebDriverException
 #import progressbar
+
 
 class News_crawl():
     def __init__(self):
@@ -47,7 +49,7 @@ class News_crawl():
 
     # get the whole outerHtmls of multi pages obtained by clicks
     def get_wholeHtml(self):
-        print(datetime.now())
+        print("start get_wholeHtml", datetime.now())
         driver = webdriver.PhantomJS()
         self.wholeHTML = []
         for url in self.urls:
@@ -63,7 +65,7 @@ class News_crawl():
                 newsHtml = find_div.get_attribute('outerHTML')
                 self.wholeHTML.append(newsHtml)
                 driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
-                time.sleep(2)
+                time.sleep(1)
         driver.quit()
         return self.wholeHTML
 
@@ -76,7 +78,7 @@ class News_crawl():
             htmlFile.write('<meta charset="utf-8">')
             for html2 in self.wholeHTML:
                 htmlFile.write(html2)
-        print(datetime.now())
+        #print("end local Html", datetime.now())
         print(self.wholeHTML)
         return
 
@@ -92,6 +94,7 @@ class News_crawl():
 
     # Main Func. scrape whole News and saveCsv with line by line using Selenium
     def main_scrape_news_saveCsv(self):
+        print("start main_scrape_news_saveCsv", datetime.now())
         n = self.startDate.replace(',', '_')
         n1 = self.endDate.replace(',', '_')
         tmpFile = "/home/ham/Envs/scrapy/navernews/naverNews_%s_to_%s_wholeNews.csv" % (n, n1)
@@ -113,24 +116,27 @@ class News_crawl():
             self.textRow = []
             self.textRow.append([newsLinks[i].text.strip()])
             self.textRow.append([sources[i].text.strip()])
-            self.textRow.append([showTimes[i].text.strip()])
+            # self.textRow.append([showTimes[i].text.strip()])
+            self.textRow.append([showTimes[i].text.strip().replace(sources[i].text.strip(), '')])
             newsLinks[i].click()
             window_after = driver.window_handles[1]
             driver.switch_to_window(window_after)
+            time.sleep(1)
             wait = WebDriverWait(driver, 20)
             wait.until(EC.visibility_of_element_located((By.ID, 'articleBodyContents')))
             newsTextID = driver.find_element_by_id('articleBodyContents')
             newsText = newsTextID.get_attribute('innerText')
             self.textRow.append([newsText.replace('\n\n', '').strip()])
             writer.writerow(self.textRow)
-            print(self.textRow)
+            #print(self.textRow)
             i = i+1
             driver.close()
             driver.switch_to_window(window_before)
         csvFile.close()
+        #print("end main_scrape_news_saveCsv", datetime.now())
         return self.textRow
 
-    # ver.0.8 scrape the whole news save Csv
+    # ver.0.8 main scrape the whole news save Csv
     def scrape_saveCsv(self):
         driver = webdriver.PhantomJS()
         #driver = webdriver.Chrome('/media/sf_share_u/chromedriver_linux64/chromedriver')
@@ -178,11 +184,12 @@ class News_crawl():
                 driver.find_element_by_xpath('//*[@id="h.m.text"]/div/div[2]/a[2]').click()
                 driver.switch_to_window(window_before)
                 driver.implicitly_wait(10)
+
         driver.quit()
         csvFile.close()
         return
 
-    # scrape title, source, showTime of newses using BeautifulSoup
+    # scrape title, source, showTime except newstext of newses using BeautifulSoup
     def scrape_newsLine_bySoup(self):
         n = self.startDate.replace(',', '_')
         n1 = self.endDate.replace(',', '_')
@@ -227,7 +234,19 @@ class News_crawl():
             driver.switch_to_window(window_before)
         return self.textRow5
 
-    # scrape the title, source, showTime, news text and return each only list
+    # save news texts list to Csv
+    def saveTo_CsvFile(self):
+        n = self.startDate.replace(',', '_')
+        n1 = self.endDate.replace(',', '_')
+        tmpFile = "/home/ham/Envs/scrapy/navernews/naverNews_%s_to_%s_newsText.csv" % (n, n1)
+        with open(tmpFile, 'wt', newline='', encoding='utf-8') as csvFile:
+            writer = csv.writer(csvFile)
+            for i in self.textRow5:
+                writer.writerow(i)
+        csvFile.close()
+        return
+
+    # scrape the title, source, showTime, news text and return each only list type
     def scrape_WholeNews_list(self):
         print(datetime.now())
         linkFile = input("upload link file:")
@@ -257,17 +276,6 @@ class News_crawl():
         print(datetime.now())
         driver.quit()
         return self.textRow, self.textRow1, self.textRow2, self.textRow5
-
-    def saveTo_CsvFile(self):
-        n = self.startDate.replace(',', '_')
-        n1 = self.endDate.replace(',', '_')
-        tmpFile = "/home/ham/Envs/scrapy/navernews/naverNews_%s_to_%s_newsText.csv" % (n, n1)
-        with open(tmpFile, 'wt', newline='', encoding='utf-8') as csvFile:
-            writer = csv.writer(csvFile)
-            for i in self.textRow5:
-                writer.writerow(i)
-        csvFile.close()
-        return
 
     # merge all lists and save to Csv
     def merge_lists_saveCsv(self):
@@ -338,19 +346,19 @@ class News_crawl():
         #query = "INSERT INTO pages (news, source, showTime, showTime2, showTime3, newsText) VALUES (%s, %s, %s, %s, %s, %s)"
         query = "INSERT INTO pages (newsTitle, source, showTime, newsText) VALUES (%s, %s, %s, %s)"
 
-        news_list = [item['newsTitle'] for item in self.data]
+        newsTitle_list = [item['newsTitle'] for item in self.data]
         source_list = [item['source'] for item in self.data]
         showTime_list = [item['showTime'] for item in self.data]
         # showTime2_list = [item['showTime2'] for item in self.data]
         # showTime3_list = [item['showTime3'] for item in self.data]
         newsText_list = [item['newsText'] for item in self.data]
-        print(news_list)
+        print(newsTitle_list)
         print(source_list)
         print(showTime_list)
         # print(showTime2_list)
         # print(showTime3_list)
         print(newsText_list)
-        values = (",".join(news_list), ",".join(source_list), ",".join(showTime_list), ",".join(newsText_list))
+        values = (",".join(newsTitle_list), ",".join(source_list), ",".join(showTime_list), ",".join(newsText_list))
         #values = (",".join(news_list), ",".join(source_list), ",".join(showTime_list), ",".join(showTime2_list), ",".join(showTime3_list), ",".join(newsText_list))
         cur.execute(query, values)
         conn.commit()
@@ -360,13 +368,13 @@ class News_crawl():
 if __name__ == '__main__':
         # print ('starting crawl.py...')
         a = News_crawl()
-        # print ('getting dates...')
-        # a.getDate()
+        print ('getting dates...')
+        a.getDate()
         # # print ('getting urls...')
-        # a.getUrls()
-        # a.get_wholeHtml()
-        # a.saveTo_localHtml()
-        # a.main_scrape_news_saveCsv()
+        a.getUrls()
+        a.get_wholeHtml()
+        a.saveTo_localHtml()
+        a.main_scrape_news_saveCsv()
         # a.scrape_saveCsv()
         # a.scrape_newsLine_bySoup()
         # a.scrape_newsText_bySelenium()
@@ -374,5 +382,5 @@ if __name__ == '__main__':
         # a.saveTo_CsvFile()
         # a.merge_lists_saveCsv()
         # a.duplicatedItem_remove()
-        a.csvToDic_oneFile()
-        a.dicToMysql()
+        # a.csvToDic_oneFile()
+        # a.dicToMysql()
