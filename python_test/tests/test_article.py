@@ -20,6 +20,16 @@ class Article_crawlerTest(unittest.TestCase):
     #     self.assertEqual(datesSet, ["2017-06-25", "2017-06-26"])
 
 
+    def test_get_multiParsedTagList(self):
+        tagList_func = get_ParsedTagList
+        for i in range(1, 30):
+            yield tagList_func(1)
+            if tagList_func(i) == tagList_func(i+1):
+                break
+            else:
+                yield tagList_func(i+1)
+            time.sleep(1)
+
     def test_get_urls_success(self):
         datesSet = ['2017-06-25', '2017-06-26']
         wantedurls = [

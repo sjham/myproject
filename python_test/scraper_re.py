@@ -1,10 +1,17 @@
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
-import html_parser_git
-
-import date_parser
+from html_parser_git_re import HtmlParser as hp
+#from date_parser_re import DateParser as dp
+import html_parser_git_re
 
 class Scraper():
+    @classmethod
+    def get_singlePageInfo(self, multiParsedTagList):
+        for t in multiParsedTagList:
+            #print(t)
+            for tagSelect in t:
+                yield tagSelect
+
     @classmethod
     def get_pageInfos(self, tagSelect):
         for item in tagSelect:
@@ -17,9 +24,6 @@ class Scraper():
 
 if __name__ == '__main__':
     a = Scraper()
-    b = html_parser_git.HtmlParser()
-    #dp = date_parser.DateParser()
-    #urls = dp.getDayUrls(dp.getDate())
-    multiParsedTagList = b.get_multiParsedTagList(b.get_ParsedTagList)
-    tagSelect = multiParsedTagList
+    multiParsedTagList = hp.get_multiParsedTagList(hp.get_ParsedTagList)
+    tagSelect = a.get_pageInfos(multiParsedTagList)
     a.get_pageInfos(tagSelect)

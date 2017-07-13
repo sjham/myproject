@@ -1,4 +1,4 @@
-import html_parser
+import html_parser_git
 import scraper
 
 class Articles():
@@ -11,22 +11,25 @@ class Articles():
 
     @classmethod
     def get_mergedList(cls, pageInfos):
-        mergedList = []
+        #mergedList = []
         for item in pageInfos:
-            mergedList.append(item)
-        print(mergedList)
-    #
+            print(item)
+    #         mergedList.append(item)
+    #     print(mergedList)
+    # #
     # pageInfos = c.get_pageInfos(tagSelect)
     # a = Articles()
     #
 
 if __name__ == '__main__':
     a = Articles()
-    b = html_parser.HtmlParser()
+    b = html_parser_git.HtmlParser()
     c = scraper.Scraper()
 
-    multiTagList = b.get_multiTagList(b.get_tagList)
-    tagSelect = b.get_tagparserBs4(str(multiTagList), 'li')
+    #multiTagList = b.get_multiTagList(b.get_tagList)
+    multiParsedTagList = b.get_multiParsedTagList(b.get_ParsedTagList)
+    tagSelect = b.get_tagparserBs4(str(multiParsedTagList), 'li')
+    #pageInfos = c.get_pageInfos(tagSelect)
     pageInfos = c.get_pageInfos(tagSelect)
     a.get_mergedList(pageInfos)
 
