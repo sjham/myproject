@@ -21,17 +21,14 @@
 # #         result.append(func(i))
 # #     return result
 #
-def t():
+def t(g=[]):
     num_list = [1, 2, 3, 4, 5]
-    g = []
     for i in num_list:
         g.append(i)
-    yield g
-    for i in g:
-        print(i)
+    return g
 
-
-t()
+a = t([6,7,8,9])
+print(a)
 #
 # squares = my_map(square, num_list)
 #
