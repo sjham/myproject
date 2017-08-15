@@ -1,7 +1,7 @@
 
-from scraper_re import Scraper as sc
-from pipelines_re import Pipeline as pp
-from html_parser_git_re import HtmlParser as hp
+from scraper import Scraper as sc
+from pipelines import Pipeline as pp
+from html_parser import HtmlParser as hp
 import datetime
 
 
