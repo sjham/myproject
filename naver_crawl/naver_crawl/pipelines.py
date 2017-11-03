@@ -11,7 +11,7 @@ class MySQLStorePipeline(object):
 
     def process_item(self, item, spider):
         try:
-            self.cursor.execute("""INSERT INTO naver(title, source, expotime, expodur, articleText, link, expotime2, expotime3, expotime4, expotime5) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, ,%s, %s)""", (item['title'], item['source'], item['expotime'], item['expodur'], item['articleText'].encode('utf-8'), item['link'], item['expotime2'], item['expotime3'], item['expotime4'], item['expotime5']))
+            self.cursor.execute("""INSERT INTO naver(title, source, category, expotime, expodur, articleText, link, expotime2, expotime3, expotime4, expotime5) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, ,%s, %s, %s)""", (item['title'], item['source'], item['category'], item['expotime'], item['expodur'], item['articleText'].encode('utf-8'), item['link'], item['expotime2'], item['expotime3'], item['expotime4'], item['expotime5']))
             self.conn.commit()
         except MySQLdb.Error as e:
             print ("Error %d: %s" % (e.args[0], e.args[1]))
@@ -41,7 +41,7 @@ class CsvExportPipeline(object):
         file = open(spider.tmpFile, 'w+b')
         self.files[spider] = file
         self.exporter = CsvItemExporter(file)
-        self.exporter.fields_to_export = ['title', 'source', 'expotime', 'expodur', 'articleText', 'link', 'expotime2', 'expotime3', 'expotime4', 'expotime5']
+        self.exporter.fields_to_export = ['title', 'source', 'category', 'expotime', 'expodur', 'articleText', 'link', 'expotime2', 'expotime3', 'expotime4', 'expotime5']
         self.exporter.start_exporting()
 
     def spider_closed(self, spider):

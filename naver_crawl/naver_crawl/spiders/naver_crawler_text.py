@@ -12,7 +12,7 @@ class NaverCrawlerSpider(scrapy.Spider):
     allowed_domains = ["news.naver.com"]
     sd = input("Start Date(yyyy,m,d): ")
     ed = input("End Date(yyyy,m,d): ")
-    tmpFile = "/home/ham/Envs/scrapy/crawled_data/navercrawl_%s_to_%s.csv" % (sd, ed)
+    tmpFile = "/media/sf_share_u/crawled_text/navercrawl_%s_to_%s.csv" % (sd, ed)
     urls = up.getDayUrls(dp.getDate(sd, ed))
 
     def start_requests(self):
@@ -32,7 +32,6 @@ class NaverCrawlerSpider(scrapy.Spider):
             item['source'] = sel.xpath('./span/span[1]/text()').extract_first()
             item['expotime'] = sel.xpath('./span/span[3]/text()').extract_first()
             #item['expodur'] = sel.xpath('./span/span[3]/text()').extract_first().split(' ')[5]
-
             item['expotime2'] = sel.xpath('./span/span[5]/text()').extract_first()
             item['expotime3'] = sel.xpath('./span/span[7]/text()').extract_first()
             item['expotime4'] = sel.xpath('./span/span[9]/text()').extract_first()
@@ -42,6 +41,7 @@ class NaverCrawlerSpider(scrapy.Spider):
     def parse_page(self, response):
         item = response.meta['item']
         item['articleText'] = ' '.join(s.strip().replace("// flash 오류를 우회하기 위한 함수 추가\nfunction _flash_removeCallback() {}", "") for s in response.xpath('//div[@id="articleBodyContents"]/descendant-or-self::*/text()').extract())
+        item['category'] = response.xpath('//*[@id="snb"]/h2/a/text()').extract()
         print(item['articleText'])
         print(item['title'])
         yield item

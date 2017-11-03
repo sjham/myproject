@@ -4,6 +4,7 @@ import scrapy
 class NaverCrawlItem(scrapy.Item):
     title = scrapy.Field()
     source = scrapy.Field()
+    category = scrapy.Field()
     expotime = scrapy.Field()
     articleText = scrapy.Field()
     link = scrapy.Field()
