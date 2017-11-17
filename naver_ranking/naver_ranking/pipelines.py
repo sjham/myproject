@@ -41,7 +41,7 @@ class CsvExportPipeline(object):
         file = open(spider.tmpFile, 'w+b')
         self.files[spider] = file
         self.exporter = CsvItemExporter(file)
-        self.exporter.fields_to_export = ['title', 'source', 'visit', 'datestamp', 'area', 'comment', 'ctitle', 'csource', 'ccount', 'cdatestamp', 'carea']
+        self.exporter.fields_to_export = ['area', 'title', 'source', 'visit', 'datestamp', 'comment', 'carea', 'ctitle', 'csource', 'ccount', 'cdatestamp']
         self.exporter.start_exporting()
 
     def spider_closed(self, spider):

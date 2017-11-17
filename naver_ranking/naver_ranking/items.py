@@ -11,20 +11,15 @@ import scrapy
 class NaverRankingItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
+    area = scrapy.Field()
     title = scrapy.Field()
     visit = scrapy.Field()
     source = scrapy.Field()
-    area = scrapy.Field()
-
-    # hits = scrapy.Field()
     datestamp = scrapy.Field()
     comment = scrapy.Field()
-
+    carea = scrapy.Field()
     ctitle = scrapy.Field()
     ccount = scrapy.Field()
     csource = scrapy.Field()
-    carea = scrapy.Field()
-
-    # hits = scrapy.Field()
     cdatestamp = scrapy.Field()
     comment = scrapy.Field()

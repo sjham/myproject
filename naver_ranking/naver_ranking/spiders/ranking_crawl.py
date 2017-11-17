@@ -9,20 +9,15 @@ from naver_ranking.date_parser import DateParser as dp
 class RankingCrawlSpider(scrapy.Spider):
     name = "ranking_crawl"
     allowed_domains = ["m.news.naver.com"]
-    #start_urls = ['http://m.news.naver.com/']
     sd = input("Start Date(yyyy,m,d): ")
     ed = input("End Date(yyyy,m,d): ")
     tmpFile = "/media/sf_share_u/crawled_text/naverranking/naverranking_%s_to_%s.csv" % (sd, ed)
-    # tmpFile2 = "/media/sf_share_u/crawled_text/navercomment_%s_to_%s.csv" % (sd, ed)
     ranking_urls = up.getRankingUrls(dp.getDate(sd, ed))
     comment_urls = up.getCommentUrls(dp.getDate(sd, ed))
     print(ranking_urls)
 
     def start_requests(self):
         for url in RankingCrawlSpider.ranking_urls:
-            # for i in range(1, 15):
-            #     real_url = url+'{}'.format(i)
-            # yield scrapy.Request(url, self.parse)
             yield scrapy.Request(url, self.ranking)
         for url in RankingCrawlSpider.comment_urls:
             yield scrapy.Request(url, self.comment)
@@ -33,8 +28,8 @@ class RankingCrawlSpider(scrapy.Spider):
             absolute_url = 'http://m.news.naver.com/' + sel.xpath('./a/@href').extract_first()
             request = scrapy.Request(absolute_url, callback=self.ranking_page)
             request.meta['item'] = item
-            item['title'] = sel.xpath('./a/div[1]/div[1]/text()').extract_first()
             item['area'] = sel.xpath('//*[@class="h2_area_inner"]/h2/text()').extract_first()
+            item['title'] = sel.xpath('./a/div[1]/div[1]/text()').extract_first()
             item['visit'] = sel.xpath('./a/div[1]/div[2]/text()').extract_first()
             yield request
 
@@ -49,12 +44,13 @@ class RankingCrawlSpider(scrapy.Spider):
         for sel in response.xpath('//ul[@class="commonlist"]/li'):
             item = NaverRankingItem()
             absolute_url = 'http://m.news.naver.com/' + sel.xpath('./a/@href').extract_first()
+            print(absolute_url)
             request = scrapy.Request(absolute_url, callback=self.comment_page)
             request.meta['item'] = item
-            item['ctitle'] = sel.xpath('./a/div[1]/div[1]/text()').extract_first()
             item['carea'] = sel.xpath('//*[@class="h2_area_inner"]/h2/text()').extract_first()
+            item['ctitle'] = sel.xpath('./a/div[1]/div[1]/text()').extract_first()
             item['ccount'] = sel.xpath('./a/div[1]/div[2]/text()').extract_first()
-            print(item['ctitle'])
+            # print(item['ctitle'])
             yield request
 
     def comment_page(self, response):
